@@ -1,88 +1,75 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
 
-interface IMultiSignature {
-    function is_apporved(uint) external view returns (string memory, uint, address, bool);
+import "./Whitelist.sol";
+
+interface IAssetBox {
+    function totalSupply() external view returns (uint);
+    function getTotalSupplyOfRole(uint8 roleIndex) external view returns (uint);
+    function getbalance(uint8 roleIndex, uint tokenID) external view returns (uint);
+    function mint(uint8 roleIndex, uint tokenID, uint amount) external;
+    function setRole(uint8 index, bytes32 role) external;
+    function transfer(uint8 roleIndex, uint from, uint to, uint amount) external;
+    function burn(uint8 roleIndex, uint tokenID, uint amount) external;
 }
 
-contract CopperBox {
-    string public constant name = "Copper Box";
-    string public constant symbol = "copper";
-    uint8 public constant decimals = 18;
 
-    uint public totalSupply = 0;
-    uint public totalSupplyOfSummoner = 0;
-    uint public totalSupplyOfMonster = 0;
+contract AssetBox is Whitelist, IAssetBox {
 
-    mapping(address => uint) public totalSupplyOfOperator;
-    mapping(address => uint) public totalSupplyOfOperatorOfSummoner;
-    mapping(address => uint) public totalSupplyOfOperatorOfMonster;
-    
-    IMultiSignature constant ms = IMultiSignature(0x7B4b69B489c2b1000a61c3bfa9934194eCE68159);
+    string public name;
+    uint8 public constant decimals = 0;
 
-    mapping(uint => uint) public balanceOfSummoner;
-    mapping(uint => uint) public balanceOfMonster;
+    mapping(uint8 => bytes32) roles;
 
-    mapping(address => bool) public isApproved;
-    
-    event Transfer(string subject, uint indexed from, uint indexed to, uint amount);
-    event Whitelist(string symbol, uint index, address operator, bool arg);
+    uint public totalSupply;
 
-    modifier is_approved() {
-        require(isApproved[msg.sender], "Not approved");
-        _;
+    mapping(uint8 => uint) private totalSupplyOfRole;
+
+    mapping(uint8 => mapping(uint => uint)) private balance;
+
+    event Transfer(bytes32 role, uint indexed from, uint indexed to, uint amount);
+    event Burn(bytes32 role, uint indexed from, uint amount);
+
+    constructor (address ms_, bytes32 symbol_, string memory name_) Whitelist(ms_, symbol_) {
+        name = name_;
+        roles[0] = "Summoner";
+        roles[1] = "Monster";
+        roles[2] = "Monster2";
     }
 
-    function mint_to_summoner(uint _summnoer, uint _amount) external is_approved{
-        totalSupply += _amount;
-        totalSupplyOfSummoner += _amount;
-        totalSupplyOfOperator[msg.sender] += _amount;
-        totalSupplyOfOperatorOfSummoner[msg.sender] += _amount;
-
-        balanceOfSummoner[_summnoer] += _amount;
-
-        emit Transfer("Summoner", _summnoer, _summnoer, _amount);
+    function getTotalSupplyOfRole(uint8 roleIndex) external view returns (uint){
+        return totalSupplyOfRole[roleIndex];
     }
 
-    function mint_to_monster(uint _monster, uint _amount) external is_approved{
-        totalSupply += _amount;
-        totalSupplyOfMonster += _amount;
-        totalSupplyOfOperator[msg.sender] += _amount;
-        totalSupplyOfOperatorOfMonster[msg.sender] += _amount;
-
-        balanceOfMonster[_monster] += _amount;
-
-        emit Transfer("Monster", _monster, _monster, _amount);
+    function getbalance(uint8 roleIndex, uint tokenID) external view returns (uint){
+        return balance[roleIndex][tokenID];
     }
 
-    function transfer_to_summoner(uint _from, uint _to, uint _amount) external is_approved{
-        balanceOfSummoner[_from] -= _amount;
-        balanceOfSummoner[_to] += _amount;
+    function mint(uint8 roleIndex, uint tokenID, uint amount) external is_approved {
+        totalSupply += amount;
+        totalSupplyOfRole[roleIndex] += amount;
+        balance[roleIndex][tokenID] += amount;
 
-        emit Transfer("Summoner", _from, _to, _amount);
+        emit Transfer(roles[roleIndex], tokenID, tokenID, amount);
     }
 
-    function transfer_to_monster(uint _from, uint _to, uint _amount) external is_approved{
-        balanceOfMonster[_from] -= _amount;
-        balanceOfMonster[_to] += _amount;
-
-        emit Transfer("Monster", _from, _to, _amount);
+    function setRole(uint8 index, bytes32 role) external is_approved{
+        roles[index] = role;
     }
 
-    function whitelist(uint _index) external {
-        string memory _symbol;
-        uint approved = 0;
-        address operator = address(0);
-        bool arg = false;
-        
-        (_symbol, approved, operator, arg) = ms.is_apporved(_index);
-        
-        require(keccak256(abi.encodePacked(_symbol)) == keccak256(abi.encodePacked(symbol)));
-        require(approved >= 2, "Less than 2");
+    function transfer(uint8 roleIndex, uint from, uint to, uint amount) external is_approved{
+        balance[roleIndex][from] -= amount;
+        balance[roleIndex][to] += amount;
 
-        isApproved[operator] = arg;
+        emit Transfer(roles[roleIndex], from, to, amount);
+    }
 
-        emit Whitelist(_symbol, _index, operator, arg);
+    function burn(uint8 roleIndex, uint tokenID, uint amount) external is_approved {
+        totalSupply -= amount;
+        totalSupplyOfRole[roleIndex] -= amount;
+        balance[roleIndex][tokenID] -= amount;
+
+        emit Burn(roles[roleIndex], tokenID, amount);
     }
 
 }

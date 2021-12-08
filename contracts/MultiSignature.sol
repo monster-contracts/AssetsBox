@@ -4,14 +4,14 @@ pragma solidity ^0.8.7;
 
 contract MultiSignature {
     // z
-    address constant public a = 0x2E62C9F8D794337728ddEfB8fD9b7457A8cde090; 
+    address immutable public a; 
     // K
-    address constant public b = 0x4f18a84affe7d03E6824A076f3c02F726bE16866;
+    address immutable public b;
     // H
-    address constant public c = 0x9D944Ba1541903e6D7E2e8720620Fc20F3df990c;
+    address immutable public c;
 
     struct Proposal {
-        string symbol;
+        bytes32 symbol;
         string description;
         address operator;
         bool arg;
@@ -35,11 +35,17 @@ contract MultiSignature {
 
     event Voted(address sender, uint index, bool isApproved);
 
+    constructor(address a_, address b_, address c_) {
+        a = a_;
+        b = b_;
+        c = c_;
+    }
+
     function get_proposals_length() external view returns (uint) {
         return proposals.length;
     }
 
-    function create(string memory _symbol, string memory _desc, address _operator, bool _arg) external only_admin{
+    function create(bytes32 _symbol, string memory _desc, address _operator, bool _arg) external only_admin{
         proposals.push(Proposal(_symbol, _desc, _operator, _arg, 0, 0));
     }
 
@@ -55,7 +61,7 @@ contract MultiSignature {
         emit Voted(msg.sender, _index, _isApproved);
     }
 
-    function is_apporved(uint _index) view external returns(string memory _symbol, uint _approved, address _operator, bool _arg){
+    function is_apporved(uint _index) view external returns(bytes32 _symbol, uint _approved, address _operator, bool _arg){
         Proposal memory prp = proposals[_index];
         _symbol = prp.symbol;
         _approved = prp.approved;
