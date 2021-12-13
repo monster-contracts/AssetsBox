@@ -8,7 +8,8 @@ interface IAssetBox {
     function getTotalSupplyOfRole(uint8 roleIndex) external view returns (uint);
     function getbalance(uint8 roleIndex, uint tokenID) external view returns (uint);
     function mint(uint8 roleIndex, uint tokenID, uint amount) external;
-    function setRole(uint8 index, bytes32 role) external;
+    function setRole(uint8 index, address role) external;
+    function getRole(uint8 index) external view returns (address);
     function transfer(uint8 roleIndex, uint from, uint to, uint amount) external;
     function burn(uint8 roleIndex, uint tokenID, uint amount) external;
 }
@@ -19,7 +20,7 @@ contract AssetBox is Whitelist, IAssetBox {
     string public name;
     uint8 public constant decimals = 0;
 
-    mapping(uint8 => bytes32) roles;
+    mapping(uint8 => address) private roles;
 
     uint public totalSupply;
 
@@ -27,14 +28,11 @@ contract AssetBox is Whitelist, IAssetBox {
 
     mapping(uint8 => mapping(uint => uint)) private balance;
 
-    event Transfer(bytes32 role, uint indexed from, uint indexed to, uint amount);
-    event Burn(bytes32 role, uint indexed from, uint amount);
+    event Transfer(uint8 roleIndex, uint indexed from, uint indexed to, uint amount);
+    event Burn(uint8 roleIndex, uint indexed from, uint amount);
 
     constructor (address ms_, bytes32 symbol_, string memory name_) Whitelist(ms_, symbol_) {
         name = name_;
-        roles[0] = "Summoner";
-        roles[1] = "Monster";
-        roles[2] = "Monster2";
     }
 
     function getTotalSupplyOfRole(uint8 roleIndex) external view returns (uint){
@@ -50,10 +48,14 @@ contract AssetBox is Whitelist, IAssetBox {
         totalSupplyOfRole[roleIndex] += amount;
         balance[roleIndex][tokenID] += amount;
 
-        emit Transfer(roles[roleIndex], tokenID, tokenID, amount);
+        emit Transfer(roleIndex, tokenID, tokenID, amount);
     }
 
-    function setRole(uint8 index, bytes32 role) external is_approved{
+    function getRole(uint8 index) external view returns (address) {
+        return roles[index];
+    }
+
+    function setRole(uint8 index, address role) external is_approved{
         roles[index] = role;
     }
 
@@ -61,7 +63,7 @@ contract AssetBox is Whitelist, IAssetBox {
         balance[roleIndex][from] -= amount;
         balance[roleIndex][to] += amount;
 
-        emit Transfer(roles[roleIndex], from, to, amount);
+        emit Transfer(roleIndex, from, to, amount);
     }
 
     function burn(uint8 roleIndex, uint tokenID, uint amount) external is_approved {
@@ -69,7 +71,7 @@ contract AssetBox is Whitelist, IAssetBox {
         totalSupplyOfRole[roleIndex] -= amount;
         balance[roleIndex][tokenID] -= amount;
 
-        emit Burn(roles[roleIndex], tokenID, amount);
+        emit Burn(roleIndex, tokenID, amount);
     }
 
 }
