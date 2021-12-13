@@ -22,7 +22,7 @@ contract AssetBox is Whitelist, IAssetBox {
 
     mapping(uint8 => address) private roles;
 
-    uint public totalSupply;
+    uint public override totalSupply;
 
     mapping(uint8 => uint) private totalSupplyOfRole;
 
@@ -35,15 +35,15 @@ contract AssetBox is Whitelist, IAssetBox {
         name = name_;
     }
 
-    function getTotalSupplyOfRole(uint8 roleIndex) external view returns (uint){
+    function getTotalSupplyOfRole(uint8 roleIndex) external view override returns (uint){
         return totalSupplyOfRole[roleIndex];
     }
 
-    function getbalance(uint8 roleIndex, uint tokenID) external view returns (uint){
+    function getbalance(uint8 roleIndex, uint tokenID) external view override returns (uint){
         return balance[roleIndex][tokenID];
     }
 
-    function mint(uint8 roleIndex, uint tokenID, uint amount) external is_approved {
+    function mint(uint8 roleIndex, uint tokenID, uint amount) external override is_approved {
         totalSupply += amount;
         totalSupplyOfRole[roleIndex] += amount;
         balance[roleIndex][tokenID] += amount;
@@ -51,22 +51,22 @@ contract AssetBox is Whitelist, IAssetBox {
         emit Transfer(roleIndex, tokenID, tokenID, amount);
     }
 
-    function getRole(uint8 index) external view returns (address) {
+    function getRole(uint8 index) external view override returns (address) {
         return roles[index];
     }
 
-    function setRole(uint8 index, address role) external is_approved{
+    function setRole(uint8 index, address role) external override is_approved{
         roles[index] = role;
     }
 
-    function transfer(uint8 roleIndex, uint from, uint to, uint amount) external is_approved{
+    function transfer(uint8 roleIndex, uint from, uint to, uint amount) external override is_approved{
         balance[roleIndex][from] -= amount;
         balance[roleIndex][to] += amount;
 
         emit Transfer(roleIndex, from, to, amount);
     }
 
-    function burn(uint8 roleIndex, uint tokenID, uint amount) external is_approved {
+    function burn(uint8 roleIndex, uint tokenID, uint amount) external override is_approved {
         totalSupply -= amount;
         totalSupplyOfRole[roleIndex] -= amount;
         balance[roleIndex][tokenID] -= amount;
