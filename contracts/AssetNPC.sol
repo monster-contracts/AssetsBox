@@ -35,7 +35,9 @@ contract AssetNPC {
     uint public immutable eFee;
     uint public immutable eCrossFee;
 
-    constructor (address assetBox_, uint supplyLimit_, address token_, uint ratio_, uint eFee_, uint eCrossFee_) {
+    uint public immutable transferMinimumAmount;
+
+    constructor (address assetBox_, uint supplyLimit_, address token_, uint ratio_, uint eFee_, uint eCrossFee_, uint transferMinimumAmount_) {
         owner = msg.sender;
 
         assetBox = assetBox_;
@@ -45,6 +47,8 @@ contract AssetNPC {
 
         eFee = eFee_;
         eCrossFee = eCrossFee_;
+
+        transferMinimumAmount = transferMinimumAmount_;
     }
 
     /**
@@ -67,6 +71,7 @@ contract AssetNPC {
      */
     function transfer(uint8 roleIndex, uint from, uint to, uint amount) external {
         require(from != to);
+        require(amount >= transferMinimumAmount, "Less than minimum amount");
 
         address role = IAssetBox(assetBox).getRole(roleIndex);
         require(_isApprovedOrOwner(role, msg.sender, from), 'Not approved');
@@ -81,6 +86,7 @@ contract AssetNPC {
      */ 
     function transferCrossRace(uint8 fromRoleIndex, uint from, uint8 toRoleIndex, uint to, uint amount) external {
         require(from != to);
+        require(amount >= transferMinimumAmount, "Less than minimum amount");
 
         address role = IAssetBox(assetBox).getRole(fromRoleIndex);
         require(_isApprovedOrOwner(role, msg.sender, from), 'Not approved');
