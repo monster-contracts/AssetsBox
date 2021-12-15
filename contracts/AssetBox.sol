@@ -28,6 +28,7 @@ contract AssetBox is Whitelist, IAssetBox {
 
     mapping(uint8 => mapping(uint => uint)) private balance;
 
+    event Mint(uint8 roleIndex, uint indexed from, uint amount);
     event Transfer(uint8 roleIndex, uint indexed from, uint indexed to, uint amount);
     event Burn(uint8 roleIndex, uint indexed from, uint amount);
 
@@ -48,7 +49,7 @@ contract AssetBox is Whitelist, IAssetBox {
         totalSupplyOfRole[roleIndex] += amount;
         balance[roleIndex][tokenID] += amount;
 
-        emit Transfer(roleIndex, tokenID, tokenID, amount);
+        emit Mint(roleIndex, tokenID, amount);
     }
 
     function getRole(uint8 index) external view override returns (address) {

@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
 
-import "./Whitelist.sol";
-
 interface IAssetBox {
     function getbalance(uint8 roleIndex, uint tokenID) external view returns (uint);
     function mint(uint8 roleIndex, uint tokenID, uint amount) external;
@@ -102,7 +100,7 @@ contract AssetNPC {
         return (operator == TokenOwner || IERC721(role).getApproved(tokenId) == operator || IERC721(role).isApprovedForAll(TokenOwner, operator));
     }
 
-    function withdrwawl(address recipient, uint amount) external {
+    function withdrawal(address recipient, uint amount) external {
         require(msg.sender == owner, "Only Owner");
 
         IERC20(token).transfer(recipient, amount);
