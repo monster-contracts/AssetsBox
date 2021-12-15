@@ -21,8 +21,11 @@ interface IERC721 {
     function isApprovedForAll(address owner, address operator) external view returns (bool);
 }
 
-
-contract WithdrawalCopper {
+/**
+    Migration from old to new copper
+    Give double
+ */
+contract CopperMigration {
 
     address public immutable oldCopperBox;
     address public immutable newCopperBox;
@@ -48,6 +51,7 @@ contract WithdrawalCopper {
             return;
         }
         
+        require(amount > 0, "Dont have Copper");
         withdrawaled[roleIndex][tokenID] = true;
         amount = amount / 1e18 * 2;
         IAssetBox(newCopperBox).mint(roleIndex, tokenID, amount);
