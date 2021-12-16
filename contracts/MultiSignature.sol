@@ -11,7 +11,7 @@ contract MultiSignature {
     address immutable public c;
 
     struct Proposal {
-        bytes32 symbol;
+        string symbol;
         string description;
         address operator;
         bool arg;
@@ -28,8 +28,8 @@ contract MultiSignature {
         _;
     }
 
-    modifier not_voted(uint _index) {
-        require(!isVoted[_index][msg.sender], "Had voted");
+    modifier not_voted(uint index) {
+        require(!isVoted[index][msg.sender], "Had voted");
         _;
     }
 
@@ -45,28 +45,28 @@ contract MultiSignature {
         return proposals.length;
     }
 
-    function create(bytes32 _symbol, string memory _desc, address _operator, bool _arg) external only_admin{
-        proposals.push(Proposal(_symbol, _desc, _operator, _arg, 0, 0));
+    function create(string memory symbol, string memory desc, address operator, bool arg) external only_admin{
+        proposals.push(Proposal(symbol, desc, operator, arg, 0, 0));
     }
 
-    function vote(uint _index, bool _isApproved) external only_admin not_voted(_index){
-        if(_isApproved){
-            proposals[_index].approved += 1;
+    function vote(uint index, bool isApproved) external only_admin not_voted(index){
+        if(isApproved){
+            proposals[index].approved += 1;
         } else {
-            proposals[_index].disapproved += 1;
+            proposals[index].disapproved += 1;
         }
 
-        isVoted[_index][msg.sender] = true;
+        isVoted[index][msg.sender] = true;
 
-        emit Voted(msg.sender, _index, _isApproved);
+        emit Voted(msg.sender, index, isApproved);
     }
 
-    function is_apporved(uint _index) view external returns(bytes32 _symbol, uint _approved, address _operator, bool _arg){
+    function is_apporved(uint _index) view external returns(string memory symbol, uint approved, address operator, bool arg){
         Proposal memory prp = proposals[_index];
-        _symbol = prp.symbol;
-        _approved = prp.approved;
-        _operator = prp.operator;
-        _arg = prp.arg;
+        symbol = prp.symbol;
+        approved = prp.approved;
+        operator = prp.operator;
+        arg = prp.arg;
     }
 
 }

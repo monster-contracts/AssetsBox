@@ -3,7 +3,7 @@ pragma solidity ^0.8.7;
 
 
 interface IMultiSignature {
-    function is_apporved(uint) external view returns (bytes32, uint, address, bool);
+    function is_apporved(uint) external view returns (string memory, uint, address, bool);
 }
 
 contract Whitelist {
@@ -13,22 +13,22 @@ contract Whitelist {
     mapping(address => bool) public isApproved;
 
     address public immutable ms;
-    bytes32 public immutable symbol;
+    string public symbol;
 
     modifier is_approved() {
         require(isApproved[msg.sender], "Not approved");
         _;
     }
 
-    event Whitelisted(bytes32 symbol, uint index, address operator, bool arg);
+    event Whitelisted(string symbol, uint index, address operator, bool arg);
 
-    constructor(address ms_, bytes32 symbol_) {
+    constructor(address ms_, string memory symbol_) {
        ms = ms_;
        symbol = symbol_;
     }
 
     function whitelist(uint proposalIndex) external {
-        bytes32 _symbol;
+        string memory _symbol;
         uint approved = 0;
         address operator = address(0);
         bool arg = false;

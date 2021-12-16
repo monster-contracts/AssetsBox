@@ -32,7 +32,7 @@ contract AssetBox is Whitelist, IAssetBox {
     event Transfer(uint8 roleIndex, uint indexed from, uint indexed to, uint amount);
     event Burn(uint8 roleIndex, uint indexed from, uint amount);
 
-    constructor (address ms_, bytes32 symbol_, string memory name_) Whitelist(ms_, symbol_) {
+    constructor (address ms_, string memory symbol_, string memory name_) Whitelist(ms_, symbol_) {
         name = name_;
     }
 
