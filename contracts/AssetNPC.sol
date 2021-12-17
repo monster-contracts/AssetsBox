@@ -46,7 +46,7 @@ contract AssetNPC {
         address roleOfGoods = IAssetBox(goods).getRole(roleIndex);
         require(roleOfCurrency == roleOfGoods, "Not the same NFT address");
 
-        require(_isApprovedOrOwner(roleOfCurrency, msg.sender, tokenID), 'Not approved');
+        require(_isApprovedOrOwner(roleOfCurrency, msg.sender, tokenID), 'Not approved or owner');
         
         totalSupply += amount;
         uint currencyAmount = amount * ratio;
