@@ -61,6 +61,8 @@ contract AssetBox is Whitelist, IAssetBox {
     }
 
     function transfer(uint8 roleIndex, uint from, uint to, uint amount) external override is_approved{
+        require(balance[roleIndex][from] >= amount, "transfer amount exceeds balance");
+
         balance[roleIndex][from] -= amount;
         balance[roleIndex][to] += amount;
 
@@ -68,6 +70,8 @@ contract AssetBox is Whitelist, IAssetBox {
     }
 
     function burn(uint8 roleIndex, uint tokenID, uint amount) external override is_approved {
+        require(balance[roleIndex][tokenID] >= amount, "burn amount exceeds balance");
+
         totalSupply -= amount;
         totalSupplyOfRole[roleIndex] -= amount;
         balance[roleIndex][tokenID] -= amount;
