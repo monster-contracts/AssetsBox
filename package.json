@@ -1,7 +1,7 @@
 {
   "name": "@cryptoshuraba/assetbox",
   "description": "Assetbox for in-game assets",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "files": [
     "/contracts/**/*.sol",
     "/build/contracts/*.json",

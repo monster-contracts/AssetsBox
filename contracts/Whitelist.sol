@@ -27,7 +27,7 @@ contract Whitelist {
        _symbol = symbol_;
     }
 
-    function symbol() public view returns (string memory) {
+    function symbol() public view virtual returns (string memory) {
         return _symbol;
     }
 
