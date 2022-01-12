@@ -20,7 +20,7 @@ interface IERC721 {
     function isApprovedForAll(address owner, address operator) external view returns (bool);
 }
 
-contract AssetLocker {
+contract AssetLockerAccumulate {
 
     address public immutable assetBox; 
     address public immutable token;
@@ -31,14 +31,14 @@ contract AssetLocker {
         uint lockDuration;
     }
 
-    mapping(uint8 => mapping(uint => Lock[])) public locksOf;
+    mapping(uint8 => mapping(uint => Lock)) public locksOf;
 
     uint public constant duration = 1 days;
 
     uint public constant minLockAmount = 1;
 
-    event Deposited(uint8 indexed roleIndex, uint indexed tokenID, uint lockId, uint amount, uint lockDuration, address indexed owner);
-    event Withdrawn(uint8 indexed roleIndex, uint indexed tokenID, uint lockId, uint amount, address indexed owner);
+    event Deposited(uint8 indexed roleIndex, uint indexed tokenID, uint total, uint amount, uint lockDuration, address indexed owner);
+    event Withdrawn(uint8 indexed roleIndex, uint indexed tokenID, uint total, uint amount, address indexed owner);
 
     constructor (address assetBox_, address token_) {
         assetBox = assetBox_;
@@ -50,37 +50,33 @@ contract AssetLocker {
         address role = IAssetBox(assetBox).getRole(roleIndex);
         require(_isApprovedOrOwner(role, msg.sender, tokenID), 'Not approved');
 
-        locksOf[roleIndex][tokenID].push(Lock({
-            amount: amount,
-            lockedAt: block.timestamp,
-            lockDuration: duration
-        }));
+        Lock storage lock = locksOf[roleIndex][tokenID];
+        lock.amount += amount;
+        lock.lockDuration = duration;
+        lock.lockedAt = block.timestamp;
         
         IERC20(token).transferFrom(msg.sender, address(this), amount*1e18);
         IAssetBox(assetBox).mint(roleIndex, tokenID, amount);
 
-        emit Deposited(roleIndex, tokenID, locksOf[roleIndex][tokenID].length - 1, amount, duration, msg.sender);
+        emit Deposited(roleIndex, tokenID, lock.amount, amount, duration, msg.sender);
     }
 
-    function getLocksOfLen(uint8 roleIndex, uint tokenID) external view returns (uint) {
-        return locksOf[roleIndex][tokenID].length;
-    }
-
-    function withdrawal(uint8 roleIndex, uint tokenID, uint lockId) external {
+    function withdrawal(uint8 roleIndex, uint tokenID, uint amount) external {
         address role = IAssetBox(assetBox).getRole(roleIndex);
         require(_isApprovedOrOwner(role, msg.sender, tokenID), 'Not approved');
 
-        Lock memory lock = locksOf[roleIndex][tokenID][lockId];
-        require(lock.amount > 0, "Amount can not be zero");
+        Lock storage lock = locksOf[roleIndex][tokenID];
+        require(lock.amount >= amount, "Not enough");
+
         uint256 unlockAt = lock.lockedAt + lock.lockDuration;
         require(block.timestamp > unlockAt, "lock not expired");
 
-        delete locksOf[roleIndex][tokenID][lockId];
+        lock.amount -= amount;
 
         IERC20(token).transfer(msg.sender, lock.amount*1e18);
         IAssetBox(assetBox).burn(roleIndex, tokenID, lock.amount);
 
-        emit Withdrawn(roleIndex, tokenID, lockId, lock.amount, msg.sender);
+        emit Withdrawn(roleIndex, tokenID, lock.amount, amount, msg.sender);
     }
 
     function _isApprovedOrOwner(address role, address operator, uint256 tokenId) private view returns (bool) {
