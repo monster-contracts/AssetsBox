@@ -37,15 +37,28 @@ contract AssetLocker {
 
     uint public constant minLockAmount = 1;
 
+    bool public depositSwitch = true;
+
+    address private immutable owner;
+
     event Deposited(uint8 indexed roleIndex, uint indexed tokenID, uint lockId, uint amount, uint lockDuration, address indexed owner);
     event Withdrawn(uint8 indexed roleIndex, uint indexed tokenID, uint lockId, uint amount, address indexed owner);
 
     constructor (address assetBox_, address token_) {
         assetBox = assetBox_;
         token = token_;
+
+        owner = msg.sender;
+    }
+
+    function setDepositSwitch(bool depositSwitch_) external{
+        require(msg.sender == owner, "Only Owner");
+
+        depositSwitch = depositSwitch_;
     }
 
     function deposit(uint8 roleIndex, uint tokenID, uint amount) external {
+        require(depositSwitch, "Can't deposit");
         require(amount >= minLockAmount, "Amount too small");
         address role = IAssetBox(assetBox).getRole(roleIndex);
         require(_isApprovedOrOwner(role, msg.sender, tokenID), 'Not approved');
