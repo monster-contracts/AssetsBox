@@ -2,6 +2,7 @@
 pragma solidity ^0.8.7;
 
 import "./Whitelist.sol";
+// import "@cryptoshuraba/assetbox/contracts/Whitelist.sol";
 
 interface IAssetBox {
     function totalSupply() external view returns (uint);
