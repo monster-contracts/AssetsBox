@@ -84,10 +84,9 @@ contract AssetLockerAccumulate {
         uint256 unlockAt = lock.lockedAt + lock.lockDuration;
         require(block.timestamp > unlockAt, "lock not expired");
 
-        lock.amount -= amount;
-
         IERC20(token).transfer(msg.sender, lock.amount*1e18);
         IAssetBox(assetBox).burn(roleIndex, tokenID, lock.amount);
+        lock.amount -= amount;
 
         emit Withdrawn(roleIndex, tokenID, lock.amount, amount, msg.sender);
     }

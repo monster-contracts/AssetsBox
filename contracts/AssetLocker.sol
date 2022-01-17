@@ -84,16 +84,17 @@ contract AssetLocker {
         require(_isApprovedOrOwner(role, msg.sender, tokenID), 'Not approved');
 
         Lock memory lock = locksOf[roleIndex][tokenID][lockId];
-        require(lock.amount > 0, "Amount can not be zero");
+        uint amount = lock.amount;
+        require(amount > 0, "Amount can not be zero");
         uint256 unlockAt = lock.lockedAt + lock.lockDuration;
         require(block.timestamp > unlockAt, "lock not expired");
 
+        IERC20(token).transfer(msg.sender, amount*1e18);
+        IAssetBox(assetBox).burn(roleIndex, tokenID, amount);
+
         delete locksOf[roleIndex][tokenID][lockId];
 
-        IERC20(token).transfer(msg.sender, lock.amount*1e18);
-        IAssetBox(assetBox).burn(roleIndex, tokenID, lock.amount);
-
-        emit Withdrawn(roleIndex, tokenID, lockId, lock.amount, msg.sender);
+        emit Withdrawn(roleIndex, tokenID, lockId, amount, msg.sender);
     }
 
     function _isApprovedOrOwner(address role, address operator, uint256 tokenId) private view returns (bool) {
