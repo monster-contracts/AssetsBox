@@ -1,4 +1,25 @@
 {
+  "name": "@cryptoshuraba/assetbox",
+  "description": "Assetbox for in-game assets",
+  "version": "1.0.2",
+  "files": [
+    "/contracts/**/*.sol",
+    "/build/contracts/*.json",
+    "!/contracts/mocks/**/*",
+    "!/contracts/patch/**/*"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/crypto-contracts/AssetsBox.git"
+  },
+  "keywords": [
+    "solidity",
+    "monster",
+    "rarity"
+  ],
+  "author": "thlynn",
+  "license": "MIT",
+  "homepage": "https://metaland.game/",
   "dependencies": {
     "@openzeppelin/contracts": "^4.4.0"
   }

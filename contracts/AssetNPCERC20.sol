@@ -16,6 +16,7 @@ interface IERC721 {
 }
 
 interface IERC20 {
+    function transferFrom(address sender, address recipient, uint256 amount) external returns (bool);
     function transfer(address recipient, uint256 amount) external returns (bool);
 }
 
@@ -60,7 +61,7 @@ contract AssetNPCERC20 {
         
         totalSupply += amount;
         uint tokenAmount = amount*1e18/ratio;
-        IERC20(token).transfer(address(this), tokenAmount);
+        IERC20(token).transferFrom(msg.sender, address(this), tokenAmount);
         IAssetBox(assetBox).mint(roleIndex, tokenID, amount);
     }
 
@@ -87,7 +88,7 @@ contract AssetNPCERC20 {
         require(amount >= transferMinimumAmount, "Less than minimum amount");
 
         address role = IAssetBox(assetBox).getRole(fromRoleIndex);
-        require(_isApprovedOrOwner(role, msg.sender, from), 'Not approved');
+        require(_isApprovedOrOwner(role, msg.sender, from), 'Not approved or owner');
 
         uint fee = amount * eCrossFee / 100;
         IAssetBox(assetBox).mint(toRoleIndex, to, amount-fee);

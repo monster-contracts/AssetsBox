@@ -2,6 +2,7 @@
 pragma solidity ^0.8.7;
 
 import "./Whitelist.sol";
+// import "@cryptoshuraba/assetbox/contracts/Whitelist.sol";
 
 interface IAssetBox {
     function totalSupply() external view returns (uint);
@@ -32,7 +33,7 @@ contract AssetBox is Whitelist, IAssetBox {
     event Transfer(uint8 roleIndex, uint indexed from, uint indexed to, uint amount);
     event Burn(uint8 roleIndex, uint indexed from, uint amount);
 
-    constructor (address ms_, bytes32 symbol_, string memory name_) Whitelist(ms_, symbol_) {
+    constructor (address ms_, string memory symbol_, string memory name_) Whitelist(ms_, symbol_) {
         name = name_;
     }
 
@@ -61,6 +62,8 @@ contract AssetBox is Whitelist, IAssetBox {
     }
 
     function transfer(uint8 roleIndex, uint from, uint to, uint amount) external override is_approved{
+        require(balance[roleIndex][from] >= amount, "transfer amount exceeds balance");
+
         balance[roleIndex][from] -= amount;
         balance[roleIndex][to] += amount;
 
@@ -68,6 +71,8 @@ contract AssetBox is Whitelist, IAssetBox {
     }
 
     function burn(uint8 roleIndex, uint tokenID, uint amount) external override is_approved {
+        require(balance[roleIndex][tokenID] >= amount, "burn amount exceeds balance");
+
         totalSupply -= amount;
         totalSupplyOfRole[roleIndex] -= amount;
         balance[roleIndex][tokenID] -= amount;

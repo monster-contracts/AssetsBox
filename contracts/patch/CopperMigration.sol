@@ -57,6 +57,10 @@ contract CopperMigration {
         IAssetBox(newCopperBox).mint(roleIndex, tokenID, amount);
     }
 
+    function isWithdrawable(uint8 roleIndex, uint tokenID) external view returns(bool){
+        return !withdrawaled[roleIndex][tokenID];
+    }
+
     function _isApprovedOrOwner(address role, address operator, uint256 tokenId) private view returns (bool) {
         require(role != address(0), "Query for the zero address");
         address TokenOwner = IERC721(role).ownerOf(tokenId);
